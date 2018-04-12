@@ -1,81 +1,68 @@
 #include <iostream>
 #include <SDL.h>
+#include <math.h>
+#include "Screen.h"
+#include "Swarm.h"
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
+using namespace jcs;
 
-int main(int argc, char **argv)
-{
-	const int SCREEN_WIDTH = 800;
-	const int SCREEN_HEIGHT = 600;
+int main(int argc, char **argv) {
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		cout << "SDL initialization failed. SDL Error: " << SDL_GetError() << endl;
+	srand((int)time(NULL));
+
+	Screen screen;
+	if (!screen.init()) {
+		cout << "Error initialising SDL: " << SDL_GetError() << endl;
 		return 1;
 	}
 
-	SDL_Window *window = SDL_CreateWindow(
-		"Particle Fire Simulation",
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
-		SCREEN_WIDTH, SCREEN_HEIGHT,
-		SDL_WINDOW_SHOWN);
+	Swarm swarm;
 
-	if (window == NULL) {
-		SDL_Quit();
-		return 2;
-	}
+	const int HALF_WIDTH = Screen::SCREEN_WIDTH / 2;
+	const int HALF_HEIGHT = Screen::SCREEN_HEIGHT / 2;
 
-	SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == NULL) {
-		cout << "Could not create renderer" << endl;
-		SDL_DestroyWindow(window);
-		SDL_Quit();
-		return 3;
-	}
+	while (true) {
+		// Get time since program started
+		int elapsed = SDL_GetTicks();
 
-	SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STATIC, SCREEN_WIDTH, SCREEN_HEIGHT);
-	if (texture == NULL) {
-		cout << "Could not create texture" << endl;
-		SDL_DestroyRenderer(renderer);
-		SDL_DestroyWindow(window);
-		SDL_Quit();
-		return 4;
-	}
-
-	Uint32 *buffer = new Uint32[SCREEN_WIDTH * SCREEN_HEIGHT];
-
-	memset(buffer, 0xFF, SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(Uint32));
-
-	SDL_UpdateTexture(texture, NULL, buffer, SCREEN_WIDTH * sizeof(Uint32));
-	SDL_RenderClear(renderer);
-	SDL_RenderCopy(renderer, texture, NULL, NULL);
-	SDL_RenderPresent(renderer);
-
-	bool quit = false;
-	SDL_Event event;
-	while (!quit) {
 		// Check for messages/events
-
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT) {
-				quit = true;
-			}
+		if (!screen.processEvents()) {
+			break;
 		}
 
 		// Update particles
+		screen.clear();
+		swarm.update(elapsed);
 
+		// Draw Particles
+		unsigned char red = (unsigned char)((1 + cos(elapsed * 0.001)) * 127.5);
+		unsigned char green = (unsigned char)((1 + sin(elapsed * 0.0008)) * 127.5);
+		unsigned char blue = (unsigned char)((1 + sin(elapsed * 0.0005)) * 127.5);
 
+		const Particle * const pParticles = swarm.getParticles();
+		for (int i = 0; i < Swarm::NPARTICLES; i++) {
+			Particle particle = pParticles[i];
 
-		// Draw particles
+			int x = (particle.m_x + 1) * HALF_WIDTH;
+			int y = (particle.m_y * HALF_WIDTH) + HALF_HEIGHT;
 
+			screen.setPixel(x, y, red, green, blue);
+		}
 
+		/*for (int y = 0; y < Screen::SCREEN_HEIGHT; y++) {
+			for (int x = 0; x < Screen::SCREEN_WIDTH; x++) {
+				screen.setPixel(x, y, red, green, blue);
+			}
+		}*/
 
+		// Draw screen
+		screen.update();
 	}
 
-	delete[] buffer;
-	SDL_DestroyRenderer(renderer);
-	SDL_DestroyTexture(texture);
-	SDL_DestroyWindow(window);
-	SDL_Quit();
+	screen.close();
+
 	return 0;
 }
