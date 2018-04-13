@@ -34,7 +34,6 @@ int main(int argc, char **argv) {
 		}
 
 		// Update particles
-		screen.clear();
 		swarm.update(elapsed);
 
 		// Draw Particles
@@ -46,19 +45,14 @@ int main(int argc, char **argv) {
 		for (int i = 0; i < Swarm::NPARTICLES; i++) {
 			Particle particle = pParticles[i];
 
-			int x = (particle.m_x + 1) * HALF_WIDTH;
+			int x = (particle.m_x * HALF_HEIGHT) + HALF_WIDTH;
 			int y = (particle.m_y * HALF_WIDTH) + HALF_HEIGHT;
 
 			screen.setPixel(x, y, red, green, blue);
 		}
 
-		/*for (int y = 0; y < Screen::SCREEN_HEIGHT; y++) {
-			for (int x = 0; x < Screen::SCREEN_WIDTH; x++) {
-				screen.setPixel(x, y, red, green, blue);
-			}
-		}*/
-
 		// Draw screen
+		screen.boxBlur();
 		screen.update();
 	}
 

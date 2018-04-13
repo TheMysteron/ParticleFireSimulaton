@@ -1,11 +1,15 @@
 #pragma once
+
+#ifndef SCREEN_H_
+#define SCREEN_H_
+
+
 #include <SDL.h>
 
 namespace jcs {
-	class Screen {
-	public:
-		const static int SCREEN_WIDTH = 800;
-		const static int SCREEN_HEIGHT = 600;
+	struct Screen {
+		const static int SCREEN_WIDTH = 1000;
+		const static int SCREEN_HEIGHT = 1000;
 	public:
 		Screen();
 		virtual ~Screen();
@@ -14,11 +18,14 @@ namespace jcs {
 		bool processEvents();
 		void setPixel(int x, int y, Uint8 red, Uint8 green, Uint8 blue);
 		void update();
-		void clear();
+		void boxBlur();
 	private:
 		SDL_Window * m_window;
 		SDL_Renderer *m_renderer;
 		SDL_Texture *m_texture;
-		Uint32 *m_buffer;
+		Uint32 *m_buffer1;
+		Uint32 *m_buffer2;
 	};
 }
+
+#endif // !SCREEN_H_

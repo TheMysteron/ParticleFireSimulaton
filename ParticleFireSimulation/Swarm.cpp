@@ -6,7 +6,6 @@ namespace jcs {
 		m_pParticles = new Particle[NPARTICLES];
 	}
 
-
 	Swarm::~Swarm() {
 		delete[] m_pParticles;
 	}
